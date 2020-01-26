@@ -16,6 +16,7 @@ LLRB have been implemented in python programming language importing matplotlib l
 * Insert
 * Delete
 * Search
+
 After each insertion and deletion operation, a checkup is made in order to preserve RBT properties.
 The algorithms have been extracted from (Introduction to Algorithms, Thomas H. Cormen) and (https://www.cs.princeton.edu/~rs/talks/LLRB/LLRB.pdf) to be implemented.
 
