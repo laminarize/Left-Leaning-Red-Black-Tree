@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
+'''
+Left leaning red-black tree
+https://github.com/Iamubab/Left-Leaning-Red-Black-Tree/tree/master
+'''
 
 class Node:
     def __init__(self, data):
@@ -44,7 +43,7 @@ class LLRBT:
             node = self.__rotateLeft(node)
         if self.__isRed(node.left) and self.__isRed(node.left.left):
             node = self.__rotateRight(node)
-        return node
+        return self.fixUp(node)
     def __isRed(self, node):
         if node == None:
             return 0  # Nil nodes are black
@@ -190,7 +189,3 @@ def plot_tree(node, figsize=(20, 10)):
     ax.axis('off')
     plot_node(node, rb)
     plt.show()
-
-
-
-
