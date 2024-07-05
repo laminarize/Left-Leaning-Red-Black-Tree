@@ -1,11 +1,6 @@
-'''
-Left leaning red-black tree
-https://github.com/Iamubab/Left-Leaning-Red-Black-Tree/tree/master
-'''
-
 class Node:
     def __init__(self, data):
-        self.data = data
+        self.data = [data, 1]
         self.left = None
         self.right = None
         self.color = 1
@@ -28,21 +23,18 @@ class LLRBT:
             self.tree = Node(val)
             self.tree.color = 0
         else:
-            self.tree = self.__insert(self.tree, val)
-            self.tree.color = 0
+            if self.Search(val) == False:
+                self.tree = self.__insert(self.tree, val)
+                self.tree.color = 0
     def __insert(self, node, val):
         if node == None:
             return Node(val)
-        if self.__isRed(node.left) and self.__isRed(node.right):
-            self.__changecolor(node)
-        if val < node.data:
+        if val < node.data[0]:
+            node.data[1] += 1
             node.left = self.__insert(node.left, val)
-        elif val > node.data:
+        elif val > node.data[0]:
+            node.data[1] += 1
             node.right = self.__insert(node.right, val)
-        if self.__isRed(node.right) and not self.__isRed(node.left):
-            node = self.__rotateLeft(node)
-        if self.__isRed(node.left) and self.__isRed(node.left.left):
-            node = self.__rotateRight(node)
         return self.fixUp(node)
     def __isRed(self, node):
         if node == None:
@@ -58,19 +50,19 @@ class LLRBT:
             self.tree = self.__delete(self.tree, val)
     def __delete(self, node, val):
         if node == None: return node
-        if val < node.data:
+        if val < node.data[0]:
             if node.left == None or (not self.__isRed(node.left) and not self.__isRed(node.left.left)):
                 node = self.__moveRedLeft(node)
             node.left = self.__delete(node.left, val)
         else:
             if self.__isRed(node.left):
                 node = self.__rotateRight(node)
-            if val == node.data and node.right == None:
+            if val == node.data[0] and node.right == None:
                 return None
             if node.right == None or (not self.__isRed(node.right) and not self.__isRed(node.right.left)):
                 node = self.__moveRedRight(node)
-            if val == node.data:
-                node.data = self.__min(node.right)
+            if val == node.data[0]:
+                node.data[0] = self.__min(node.right)
                 node.right = self.__deleteMin(node.right)
             else:
                 node.right = self.__delete(node.right, val)
@@ -87,26 +79,117 @@ class LLRBT:
         if node == None:
             return None
         else:
-            return node.data
+            return node.data[0]
 
 #Search node
     def __Node_in_tree(self, node, val):
         if node == None:
             return None
-        if node.data == val:
+        if node.data[0] == val:
             return node
-        if val < node.data:
+        if val < node.data[0]:
             return self.__Node_in_tree(node.left, val)
         else:
-            if val > node.data:
+            if val > node.data[0]:
                 return self.__Node_in_tree(node.right, val)
+    def __min(self, node):
+        while node.left != None: node = node.left
+        if node == None:
+            return None
+        else:
+            return node.data[0]
+###################################################################################
+    def __Lmedian(self, node, median_index, left_size=0):
+        if node.left is not None:
+            left_size = node.left.data[1]
+        else:
+            left_size = 0
+        if left_size + 1 == median_index:
+            return node
+        if left_size < median_index:
+            median_index -= (left_size + 1)
+            node = self.__Lmedian(node.right, median_index)
+        else:
+            node = self.__Lmedian(node.left, median_index)
+        return node
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+########$$$$$$$$$$$$$$$$$$$$$$$$$###############################
+    def __find_successor(self, node):
+        current = node.right
+        while current.left is not None:
+            current = current.left
+        return current 
+    def __median(self, node, case, median_index, left_size=0):
+        if node.left is not None:
+            left_size = node.left.data[1]
+        else:
+            left_size = 0
+        if case == 'even':
+            # Check for even case:
+            if left_size == median_index - 1:  # Median is between this node and its successor
+                successor = self.__find_successor(node)  # Find successor (smallest node in right subtree)
+                return (node.data[0] + successor.data[0]) / 2  # Average of two values
+            elif left_size < median_index - 1:
+                median_index -= (left_size + 1)  # Adjust target for right subtree
+                return self.__median(node.right, case, median_index)
+            else:
+                return self.__median(node.left, case, median_index)
+        else:
+            if left_size + 1 == median_index:
+                return node
+            if left_size < median_index:
+                median_index -= (left_size + 1)
+                node = self.__median(node.right, median_index)
+            else:
+                node = self.__median(node.left, median_index)
+        return node
+########$$$$$$$$$$$$$$$$$$$$$$$$$###############################
     def Search(self, val):
         node = self.__Node_in_tree(self.tree, val)
         if node != None:
             return True
         elif node == None:
             return False
-
+    def find_min(self):
+        """Finds and returns the node with the minimum value in the tree."""
+        if self.tree is None:
+            return None  # Tree is empty
+        else:
+            return self.__min(self.tree)
+###################################################################################
+    def Lmedian(self):
+        """Finds and returns the node with the left median value in the tree."""
+        root = self.tree
+        if (root.left and root.right) is not None:
+            if 0 <= root.right.data[1] - root.left.data[1] <= 1:
+                return root.data[0]
+        if root.left is not None:
+            tree_size = root.data[1]
+            median_index = tree_size // 2 + 1
+            node = self.__Lmedian(root, median_index)
+            return node.data[0]
+        else:
+            return root.data[0]
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    def median(self):
+        """Finds and returns the node with the median value in the tree."""
+        root = self.tree
+        if (root.left and root.right) is not None:
+            if root.right.data[1] - root.left.data[1] == 0:
+                return root.data[0]
+        if root.left is not None:
+            tree_size = root.data[1]
+            median_index = tree_size // 2
+            if tree_size % 2 == 0:
+                case = 'even'
+                median_index = tree_size // 2
+            else:
+                case = 'odd'
+                median_index = (tree_size + 1) // 2
+            node = self.__median(root, case, median_index)
+            return node
+        else:
+            return root.data[0]
 
 # Fixups
     def __changecolor(self, node):
@@ -144,8 +227,18 @@ class LLRBT:
         return node
     def fixUp(self, node):
         if self.__isRed(node.right):
+####################################################################################################
+            node.data[1], node.right.data[1] = node.data[1] - node.right.data[1], node.data[1]
+            if node.right.left is not None:
+                node.data[1] += node.right.left.data[1]
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             node = self.__rotateLeft(node)
         if self.__isRed(node.left) and self.__isRed(node.left.left):
+####################################################################################################
+            node.data[1], node.left.data[1] = node.data[1] - node.left.data[1], node.data[1]
+            if node.left.right is not None:
+                node.data[1] += node.left.right.data[1]
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             node = self.__rotateRight(node)
         if self.__isRed(node.left) and self.__isRed(node.right):
             self.__changecolor(node)
@@ -189,3 +282,13 @@ def plot_tree(node, figsize=(20, 10)):
     ax.axis('off')
     plot_node(node, rb)
     plt.show()
+
+
+nodes = list(range(1,9))
+P06 = LLRBT()
+for node in nodes:
+    P06.Insert(node)
+plot_tree(P06.tree,figsize=(20, 10))
+print(f'Median: {P06.median()}')
+
+# Time complexity of algorithm is O(log n) since traversing a red black balanced tree is worst case O(log n)
