@@ -16,8 +16,8 @@ LLRB have been implemented in python programming language importing matplotlib l
 * Insert
 * Delete
 * Search
-* * Find True Median (LLRB.median)
-* * Find Left Median (LLRB.Lmedian)
+* Find True Median (LLRB.median)
+* Find Left Median (LLRB.Lmedian)
 
 After each insertion and deletion operation, a checkup is made in order to preserve RBT properties.
 The algorithms have been extracted from (Introduction to Algorithms, Thomas H. Cormen) and (https://www.cs.princeton.edu/~rs/talks/LLRB/LLRB.pdf) to be implemented.
